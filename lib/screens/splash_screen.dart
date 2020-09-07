@@ -1,11 +1,9 @@
 import 'package:covid_new_19/helpers/auth_provider.dart';
 import 'package:covid_new_19/screens/tabs/TabsPage.dart';
-import 'package:covid_new_19/screens/tabs/home.dart';
 import 'package:covid_new_19/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-
 import 'getstarted_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -29,7 +27,8 @@ class SplashScreenState extends State<SplashScreen> {
     Future.delayed(
       Duration(seconds: 4),
       () {
-        AuthProvider authProvider = Provider.of(context);
+        //AuthProvider authProvider = Provider.of<Future<AuthProvider>>(context) as AuthProvider;
+        AuthProvider authProvider =context.read<AuthProvider>();
         if (authProvider.isAuthenticated) {
           Navigator.of(context).popAndPushNamed(TabsPage.id);
         } else {

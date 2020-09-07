@@ -32,7 +32,7 @@ dependencies:
   # Google Maps
   google_maps_flutter: ^0.4.0
   # Provider
-  provider: ^3.0.0
+  provider: ^4.1.2
   # Location
   location: ^2.3.5
   # Storage

@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
           create: (_) {
             return AuthProvider();
           },
+
         )
       ],
       child: MaterialApp(

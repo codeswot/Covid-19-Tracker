@@ -12,6 +12,7 @@ class GetStartedRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     AuthProvider authProvider = Provider.of(context);
     var appWidth = screenWidth(context);
     return Scaffold(

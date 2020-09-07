@@ -1,5 +1,7 @@
+import 'package:covid_new_19/helpers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:covid_new_19/widgets/TabNavigationItem.dart';
+import 'package:provider/provider.dart';
 
 class TabsPage extends StatefulWidget {
   static const String id = 'TabsPage';
@@ -12,6 +14,7 @@ class _TabsPageState extends State<TabsPage> {
 
   @override
   Widget build(BuildContext context) {
+    AuthProvider authProvider = Provider.of(context);
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
