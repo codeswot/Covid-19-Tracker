@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
         )
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Covid 19 App',
         initialRoute: SplashScreen.id,
         routes: myAppRoutes,

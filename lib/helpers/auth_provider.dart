@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 class AuthProvider with ChangeNotifier {
   User fireBaseuser;
   StreamSubscription userAuthSub;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   AuthProvider() {
     userAuthSub = FirebaseAuth.instance.onAuthStateChanged.listen((newUser) {
@@ -15,6 +16,13 @@ class AuthProvider with ChangeNotifier {
     }, onError: (e) {
       print('AuthProvider - FirebaseAuth - onAuthStateChanged - $e');
     });
+
+
+  }
+
+  // GET UID
+  Future<String> getCurrentUID() async {
+    return (await _firebaseAuth.currentUser).uid;
   }
 
   @override

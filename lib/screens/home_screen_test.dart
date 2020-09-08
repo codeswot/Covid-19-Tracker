@@ -1,5 +1,6 @@
 import 'package:covid_new_19/helpers/auth_provider.dart';
 import 'package:covid_new_19/services/location_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -25,6 +26,7 @@ class HomeScreenState extends State<HomeScreen> {
   GoogleMapController mapController;
   Location location = new Location();
   LocationServices locationServices = LocationServices();
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   Geoflutterfire geo = Geoflutterfire();
@@ -36,13 +38,34 @@ class HomeScreenState extends State<HomeScreen> {
   //Subscription
   StreamSubscription subscription;
 
+  Set<Marker> _markers = {};
+
+  Completer<GoogleMapController> _controller = Completer();
+
+
+
+
   build(context) {
     return Stack(children: [
       GoogleMap(
+        markers: _markers,
         initialCameraPosition:
             CameraPosition(target: LatLng(24.142, -110.321), zoom: 19),
         zoomGesturesEnabled: true,
-        onMapCreated: _onMapCreated,
+        onMapCreated: (GoogleMapController controller){
+          _controller.complete(controller);
+
+          setState(() {
+            _markers.add(
+              Marker(
+                markerId: MarkerId('Me'),
+                position: LatLng(myPosition.latitude, myPosition.longitude),
+              )
+            );
+            _startQuery();
+          });
+
+        },
         myLocationEnabled: true,
         mapType: MapType.normal,
         compassEnabled: true,
@@ -75,43 +98,44 @@ class HomeScreenState extends State<HomeScreen> {
     ]);
   }
 
-  _onMapCreated(GoogleMapController controller) {
-    _startQuery();
-    setState(() {
-      mapController = controller;
-    });
-  }
-
-  void _addMarker() {
-    var marker = Marker(
-      markerId: MarkerId('$myPosition'),
-      position: LatLng(myPosition.latitude, myPosition.longitude),
-      infoWindow: InfoWindow(title: 'Me'),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-    );
-  }
 
   void _animateToUser() async {
+    const twoSec = const Duration(seconds: 2);
+    int _start = 5;
+
     location.onLocationChanged();
     var postn = await location.getLocation();
-    mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(postn.latitude, postn.longitude),
-      zoom: 17.0,
-    )));
+
+    Timer _timer = new Timer.periodic(twoSec,
+        (Timer timer) => setState((){
+          if(_start < 2){
+            timer.cancel();
+          }else{
+
+            mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+              target: LatLng(postn.latitude, postn.longitude),
+              zoom: 17.0,
+            )));
+          }
+        })
+    );
+
+
   }
 
   Future<DocumentReference> _addGeoPoint() async {
     var pos = await location.getLocation();
+    final  uid = await _firebaseAuth.currentUser.uid;
     GeoFirePoint point =
         geo.point(latitude: pos.latitude, longitude: pos.longitude);
-    return firestore.collection('locations').add({
+    return firestore.collection('userData').doc(uid).collection('locations').add({
       'position': point.data,
     });
   }
 
   void _updateMarkers(List<DocumentSnapshot> documentList){
     print(documentList);
-    final List<Marker> markers = [];
+
     documentList.forEach((DocumentSnapshot document) {
       GeoFirePoint pos = document.data()['position']['geopoint'];
       double distance = document.data()['distance'];
@@ -123,17 +147,20 @@ class HomeScreenState extends State<HomeScreen> {
           title: 'nearest user is $distance km from you.'
         ),
       );
+
+      _markers.add(marker);
     });
   }
 
   _startQuery() async {
+    final  uid = await _firebaseAuth.currentUser.uid;
     //Get users location
     var position = await location.getLocation();
     double lat = position.latitude;
     double lng = position.longitude;
 
     //reference to location
-    var ref = firestore.collection('locations');
+    var ref = firestore.collection('userData').doc(uid).collection('locations');
     GeoFirePoint center = geo.point(latitude: lat, longitude: lng);
 
     //subscribe to query
