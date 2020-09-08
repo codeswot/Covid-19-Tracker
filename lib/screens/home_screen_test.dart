@@ -54,6 +54,7 @@ class HomeScreenState extends State<HomeScreen> {
         zoomGesturesEnabled: true,
         onMapCreated: (GoogleMapController controller){
           _controller.complete(controller);
+          _animateToUser();
 
           setState(() {
             _markers.add(
@@ -106,12 +107,11 @@ class HomeScreenState extends State<HomeScreen> {
     location.onLocationChanged();
     var postn = await location.getLocation();
 
-    Timer _timer = new Timer.periodic(twoSec,
+     Timer.periodic(twoSec,
         (Timer timer) => setState((){
           if(_start < 2){
             timer.cancel();
           }else{
-
             mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
               target: LatLng(postn.latitude, postn.longitude),
               zoom: 17.0,
